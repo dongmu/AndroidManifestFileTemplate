@@ -46,8 +46,15 @@ typedef struct {
         uint scStyleOffset[ scStylePoolOffset ];
 
     // The Strings
-    while (FTell() != (0x8+scSize) && FTell()+2 != (0x8+scSize))
-        STRING_ITEM strItem;
+    local int i;
+    for (i = 0; i < scStringCount; i++) 
+    {
+        if ((0x8+scStringPoolOffset + scStringOffsets[ i ]) <  (0x8+scSize)) 
+        {
+            FSeek(0x8+scStringPoolOffset + scStringOffsets[ i ]);
+            STRING_ITEM strItem;
+        }
+    }
     
 } STRINGCHUNK;
 
