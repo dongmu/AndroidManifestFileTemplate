@@ -28,8 +28,20 @@ typedef struct {
         } ONECHAR[ sfSize ];
     }
     ushort sfEnd;
-} STRING_ITEM;
+} STRING_UTF16_ITEM;
 
+// Define the string format
+typedef struct {
+    ubyte sfSize;
+    ubyte sfSize2;
+    if (sfSize > 0) 
+    {
+        struct {
+            char c2;
+        } ONECHAR[ sfSize ];
+    }
+    ubyte sfEnd;
+} STRING_UTF8_ITEM;
 
 // Define the string chunk
 typedef struct {
@@ -37,13 +49,19 @@ typedef struct {
     uint scSize;
     uint scStringCount;
     uint scStyleCount;
-    uint scUNKNOWN;
+    uint scFlags;
     uint scStringPoolOffset;
     uint scStylePoolOffset;
     uint scStringOffsets[ scStringCount ] <comment="Relative to the 0x8+scStringPoolOffset">;
     
     if (scStyleCount > 0) 
         uint scStyleOffset[ scStylePoolOffset ];
+
+    local int utf16 = true;
+    if (scFlags >> 8 == 1)
+    {
+        utf16 = false;
+    }
 
     // The Strings
     local int i;
@@ -52,10 +70,14 @@ typedef struct {
         if ((0x8+scStringPoolOffset + scStringOffsets[ i ]) <  (0x8+scSize)) 
         {
             FSeek(0x8+scStringPoolOffset + scStringOffsets[ i ]);
-            STRING_ITEM strItem;
+            if (utf16)
+            {
+                STRING_UTF16_ITEM strItem;
+            } else {
+                STRING_UTF8_ITEM strItem;
+            }
         }
     }
-    
 } STRINGCHUNK;
 
 // Define the Resource chunk
@@ -74,7 +96,7 @@ typedef struct {
     uint sncSignature;
     uint sncSize;
     uint sncLineNumber;
-    uint sncUNKNOWN;
+    uint sncComment;
     uint sncPrefix;
     uint sncUri;
 } SNCHUNK;
@@ -84,7 +106,7 @@ typedef struct {
     uint encSignature;
     uint encSize;
     uint encLineNumber;
-    uint encUNKNOWN;
+    uint encComment;
     uint encPrefix;
     uint encUri;
 } ENCHUNK;
